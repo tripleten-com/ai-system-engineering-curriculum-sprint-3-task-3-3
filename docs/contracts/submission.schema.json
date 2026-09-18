@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Coldline Task 3.3 public answer contract. This Task has no useful direct answer: the deliverable is the deployed queue's dead-letter policy and the two exercise scripts' observed behavior, and the automated checks exercise the running application code rather than a recorded claim. The mapping is required and must be empty, so an invented status or self-reported test result is rejected rather than accepted as evidence.",
+  "title": "Coldline Task 3.3 answers",
+  "description": "An intentionally empty answer mapping.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["answers"],
+  "properties": {
+    "answers": {
+      "description": "Empty by design. Add no field: the deployed configuration and its observed behavior are the evidence.",
+      "type": "object",
+      "additionalProperties": false,
+      "maxProperties": 0
+    }
+  }
+}
