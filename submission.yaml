@@ -12,9 +12,9 @@
 # Do not include secrets, personal data, or local absolute paths.
 
 # Task 3.3 — Configure the deployed queue's dead-letter policy
-# Set COLDLINE_QUEUE_VISIBILITY_TIMEOUT_SECONDS and COLDLINE_QUEUE_MAX_RECEIVE_COUNT
-# in compose.yaml, inside the published bounds, choosing a receive-count bound
-# that survives at least one transient failure. Then run the two failure
+# Raise COLDLINE_QUEUE_MAX_RECEIVE_COUNT in compose.yaml, inside the published
+# bounds, to a value that survives at least one transient failure. Leave
+# COLDLINE_QUEUE_VISIBILITY_TIMEOUT_SECONDS as supplied. Then run the two failure
 # exercises (poe inject-failure, poe redrive) against the live stack.
 # Source: docs/student/task-3-3-contract.md.
 # Your configuration and the running checks provide the evidence for this Task.

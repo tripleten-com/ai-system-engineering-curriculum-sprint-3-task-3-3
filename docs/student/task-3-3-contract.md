@@ -1,7 +1,7 @@
 # Task 3.3 — Dead-letter redrive contract
 
 Configure the deployed queue's dead-letter policy, then run the two supplied exercise scripts
-that force one exception to the dead-letter queue and recover it. You edit two numbers in
+that force one exception to the dead-letter queue and recover it. You edit one number in
 `compose.yaml`. You do not touch the transport, either adapter, or how the worker is wired.
 
 ## What is assessed, and by whom
@@ -44,7 +44,7 @@ Run these against the live stack, in order, after `poe start`:
 ```shell
 poe worker-stop      # the injector receives without acknowledging; a live worker would race it
 poe inject-failure   # submits one reading, then exhausts the queue's own redrive budget
-poe worker-start      # the redriven message needs a worker running to process it
+poe worker-start      # re-runs the initializer, then starts the worker; both are required
 poe redrive           # resubmits the dead-lettered message and waits for a terminal state
 ```
 
