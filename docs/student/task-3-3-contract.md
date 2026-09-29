@@ -1,4 +1,4 @@
-# Task 3.3 — Dead-letter redrive contract
+# Task 3.3 — Asynchronous recovery contract
 
 Configure the deployed queue's dead-letter policy, then run the two supplied exercise scripts
 that force one exception to the dead-letter queue and recover it. You edit one number in
@@ -11,7 +11,7 @@ that force one exception to the dead-letter queue and recover it. You edit one n
 | The pull request changes only `compose.yaml` and `submission.yaml` | Automated, in this repository |
 | The deployed queue's redrive policy tolerates at least one transient failure before dead-lettering a message | Automated, against the running `coldline-exception-jobs` queue |
 | A message that exceeds the configured `maxReceiveCount` still arrives at the dead-letter queue automatically | Automated, against a fresh exercise queue with the same shape |
-| A redriven message still completes exactly once, proving recovery is idempotent, not merely eventual | Automated, against `WorkerApplication`'s existing terminal-state handling |
+| A redriven message still completes exactly once, proving recovery is idempotent, not merely eventual | Shown by `poe redrive`'s `replay` output, which delivers the completed job once more against `WorkerApplication`'s existing terminal-state handling; your instructor reads it in your pull request evidence |
 | Your reasoning about why `queue_max_receive_count=1` passes Pydantic's bounds but is still the wrong choice | Your instructor, at the Project Defense |
 
 ## What is already supplied
@@ -45,12 +45,23 @@ Run these against the live stack, in order, after `poe start`:
 poe worker-stop      # the injector receives without acknowledging; a live worker would race it
 poe inject-failure   # submits one reading, then exhausts the queue's own redrive budget
 poe worker-start      # re-runs the initializer, then starts the worker; both are required
-poe redrive           # resubmits the dead-lettered message and waits for a terminal state
+poe redrive           # resubmits every dead-lettered message, waits for each to finish, then delivers the newest once more
 ```
 
-`poe inject-failure` prints the exception id, the configured `maxReceiveCount`, and the
-resulting dead-letter queue depth. `poe redrive` prints the same exception id's final state,
-which must be `COMPLETED`.
+`poe inject-failure` submits a fresh reading each run and prints its exception id, the
+configured `maxReceiveCount`, and the resulting dead-letter queue depth. `poe redrive` moves
+every message in the dead-letter queue back to the main queue, not only the newest one, so a
+message left behind by an earlier attempt or by another exercise is recovered too. It prints the
+exception id of the most recently sent message, normally the one `poe inject-failure` just
+printed, with its final state, which must be `COMPLETED`, and a `replay` object: after completion it
+delivers that same job once more and confirms the record's `state`, `updated_at`, and `summary`
+did not change. Any older exception ids it redrove are listed under `also_redriven`. It exits `0`
+only when every redriven exception reached `COMPLETED` and that second delivery was consumed and
+left the record unchanged. A redriven exception the API no longer has a record for, for example
+after `poe reset-baseline`, is shown as `MISSING` and listed under `missing`: an older one like
+that does not fail the run, but a missing reported exception does. A `dead_letter_queue_depth` above `1` from `poe inject-failure`, or a
+non-empty `also_redriven`, means earlier messages were still waiting. If a run goes wrong, run
+the two exercises again; each run creates a new exception.
 
 ## Commands
 
