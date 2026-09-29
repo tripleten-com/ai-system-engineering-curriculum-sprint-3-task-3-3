@@ -1,4 +1,4 @@
-# Coldline Task 3.3 — Dead-letter redrive
+# Coldline Task 3.3 — Asynchronous recovery
 
 This checkpoint retires Redis Streams as the `JobQueue` transport in favor of a supplied,
 conformance-tested LocalStack SQS adapter with a bound dead-letter queue. The transport swap,
@@ -64,9 +64,9 @@ poe verify
 | `poe smoke` | Check the initialized running platform |
 | `poe e2e` | Run the external API-to-worker workflow |
 | `poe inject-failure` | Submit one reading, then exhaust the queue's redrive budget so it reaches the dead-letter queue |
-| `poe redrive` | Resubmit the dead-lettered message and wait for a terminal state |
+| `poe redrive` | Resubmit every dead-lettered message and wait for each to reach a terminal state, then deliver the most recent one once more and confirm its completed record is unchanged; any older ones are listed under `also_redriven` |
 | `poe verify` | Run the public student verification path |
-| `poe student-tests` | Run your own tests under `tests/student/` |
+| `poe student-tests` | Run the supplied tests under `tests/student/`; this Task permits no additions there |
 | `poe restart` | Restart the existing API and worker containers **without rebuilding** |
 | `poe stop` | Remove containers and the network, keeping named volumes |
 | `poe reset` | Remove containers, the network, and local named volumes |
@@ -109,7 +109,7 @@ repository root/
     ├── diagnostics/     Supplied stage inspector
     ├── doubles/         Supplied deterministic test doubles
     ├── failure/         Supplied dead-letter failure-exercise scripts — run them, do not edit them
-    ├── student/         Your own tests
+    ├── student/         Supplied student tests; no additions in this Task
     ├── smoke/           Running-platform checks
     └── e2e/             Supplied workflow tools and checks
 ```
@@ -191,12 +191,13 @@ repository is supplied, including the release manifest and the rest of the appli
 
 ### Student walkthrough
 
-See **Task 3: Dead-letter redrive** in your course platform for the full walkthrough. In
+See **Task 3: Asynchronous recovery** in your course platform for the full walkthrough. In
 outline: read `docs/student/task-3-3-contract.md` and `src/adapters/queue/sqs.py`'s docstrings,
 raise `queue_max_receive_count` in `compose.yaml`, run `poe start` and `poe queue-contract` until
 it passes, run the two failure exercises (`poe worker-stop`, `poe inject-failure`,
 `poe worker-start`, `poe redrive`) against the live stack and confirm the redriven message
-completes, run `poe verify`, and open your pull request.
+completes and its `replay` output shows the second delivery left the record unchanged, run
+`poe verify`, and open your pull request.
 
 ## Operational limits
 
